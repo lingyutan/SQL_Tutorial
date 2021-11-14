@@ -277,7 +277,7 @@ FROM orders o, customers c
 WHERE o.customer_id = c.customer_id; -- Remember to add a WHERE condition!
 
 
--- OUTER JOINS
+-- OUTER JOINS: LEFT JOIN / RIGHT JOIN
 SELECT 
 		c.customer_id,
         c.first_name,
@@ -285,8 +285,33 @@ SELECT
 FROM customers c
 LEFT JOIN orders o
 		ON c.customer_id = o.customer_id
-ORDER BY c.customer_id
-GROUP BY c.customer_id
+ORDER BY c.customer_id;
+
+-- EXERCISE 13
+SELECT 
+		p.product_id,
+        p.name,
+        oi.quantity
+FROM products p
+LEFT JOIN order_items oi
+		ON p.product_id = oi.product_id;
+        
+/*
+SELECT 
+		p.product_id,
+        SUM(oi.quantity)
+FROM products p
+LEFT JOIN order_items oi
+		ON p.product_id = oi.product_id
+GROUP BY p.product_id;
+*/
+
+
+-- OUTER JOINS BETWEEN MULTIPLE TABLES
+
+
+
+-- EXERCISE 14
 
 
 
