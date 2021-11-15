@@ -537,7 +537,89 @@ FROM orders
 WHERE order_date < '2019-01-01';
 
 -- EXERCISE 19
+USE sql_invoicing;
 
+CREATE TABLE invoices_archived AS
+SELECT 
+		i.invoice_id,
+        i.number,
+        c.name AS client,
+		i.invoice_total,
+        i.payment_total,
+        i.invoice_date,
+        i.payment_date,
+        i.due_date
+FROM invoices i
+JOIN clients c USING (client_id)
+WHERE payment_date IS NOT NULL;
+
+
+-- UPDATING A SINGLE ROW
+UPDATE invoices 
+SET payment_total = DEFAULT, payment_date = NULL
+WHERE invoice_id = 1;
+
+UPDATE invoices 
+SET 
+		payment_total = invoice_total * 0.5,
+        payment_date = due_date
+WHERE invoice_id = 3;
+
+
+-- UPDATING MULTIPLE ROWS
+UPDATE invoices 
+SET 
+		payment_total = invoice_total * 0.5,
+        payment_date = due_date
+WHERE client_id = 3;
+
+
+-- EXERCISE 20
+USE sql_store;
+
+UPDATE customers
+SET points = points + 50
+WHERE birth_date < '1990-01-01';
+
+
+-- USING SUBQUARIES IN UPDATES
+USE sql_invoicing;
+
+UPDATE invoices 
+SET 
+		payment_total = invoice_total * 0.5,
+        payment_date = due_date
+WHERE client_id IN
+					(SELECT client_id
+					FROM clients
+					WHERE state IN ('CA', 'NY')); -- Always remember to select to check before updating
+
+
+-- EXERCISE 21
+USE sql_store;
+SELECT * FROM sql_store.orders;
+
+UPDATE orders
+SET comments = 'Gold Customer'
+WHERE customer_id IN
+						(SELECT customer_id
+						FROM customers
+						WHERE points >= 3000);
+                        
+
+-- DELETING ROWS
+USE sql_invoicing;
+
+DELETE FROM invoices
+WHERE client_id = (
+	SELECT client_id
+	FROM clients
+	WHERE name = 'Myworks'
+);
+
+
+-- RESTORING THE DATABASES
+-- Open and run create-databases.sql
 
 
 
