@@ -270,7 +270,7 @@ JOIN order_item_notes oin
 SELECT *
 FROM orders o
 JOIN customers c
-ON o.customer_id = c.customer_id;
+		ON o.customer_id = c.customer_id;
 
 SELECT *
 FROM orders o, customers c
@@ -308,17 +308,235 @@ GROUP BY p.product_id;
 
 
 -- OUTER JOINS BETWEEN MULTIPLE TABLES
-
-
+SELECT 
+		c.customer_id,
+        c.first_name,
+        o.order_id,
+        sh.name AS shipper
+FROM customers c
+LEFT JOIN orders o
+		ON c.customer_id = o.customer_id
+LEFT JOIN shippers sh
+		ON o.shipper_id = sh.shipper_id
+ORDER BY c.customer_id;
 
 -- EXERCISE 14
 
+SELECT 
+		o.order_date,
+        o.order_id,
+        c.first_name,
+        sh.name AS shipper,
+        os.name AS status
+FROM orders o
+JOIN customers c
+		ON o.customer_id = c.customer_id -- Every order has a customer;
+LEFT JOIN shippers sh
+		ON o.shipper_id = sh.shipper_id
+JOIN order_statuses os
+		ON o.status = os.order_status_id -- Every order has order status;
+ORDER BY status;
 
 
+-- SELF OUTER JOINS
+USE sql_hr;
+
+SELECT 
+		e.employee_id,
+        e.first_name,
+        m.first_name AS manager
+FROM employees e
+LEFT JOIN employees m
+		ON e.reports_to = m.employee_id;
 
 
+-- CLAUSE USING
+USE sql_store;
+
+SELECT 
+		o.order_id,
+        c.first_name,
+        sh.name AS shipper
+FROM orders o
+JOIN customers c
+		-- ON o.customer_id = c.customer_id;
+		USING (customer_id)
+LEFT JOIN shippers sh
+		USING (shipper_id);
+        
+        
+SELECT *
+FROM order_items oi
+LEFT JOIN order_item_notes oin
+		/*ON oi.order_id = oin.order_id AND
+				oi.product_id = oin.product_id;*/
+		USING (order_id, product_id);
+
+-- EXERCISE 15
+USE sql_invoicing;
+
+SELECT 
+		p.date,
+        c.name AS client,
+        p.amount,
+        pm.name AS payment_method
+FROM payments p
+JOIN clients c USING (client_id)
+JOIN payment_methods pm
+		ON p.payment_method = pm.payment_method_id;
+        
+
+-- NATURAL JOINS (NOT RECOMMENDED)
+USE sql_store;
+
+SELECT 
+		o.order_id,
+        c.first_name
+FROM orders o
+NATURAL JOIN customers c;
 
 
+-- CROSS JOINS
+SELECT 
+		c.first_name AS customer,
+        p.name AS product
+FROM customers c
+CROSS JOIN products p
+ORDER BY c.first_name;
+
+SELECT 
+		c.first_name AS customer,
+        p.name AS product
+FROM customers c, orders o
+ORDER BY c.first_name;
+
+-- EXERCISE 16
+SELECT *
+FROM shippers, products;
+
+SELECT *
+FROM shippers
+CROSS JOIN products;
+
+
+-- UNIONS
+SELECT 
+		order_id,
+        order_date,
+        'Active' AS status
+FROM orders
+WHERE order_date >= '2019-01-01'
+UNION
+SELECT 
+		order_id,
+        order_date,
+        'Archived' AS status
+FROM orders
+WHERE order_date < '2019-01-01';
+
+SELECT first_name AS full_name -- Determine the name of returned columns
+FROM customers
+UNION 
+SELECT name
+FROM shippers;
+
+
+-- EXERCISE 17
+USE sql_store;
+
+SELECT 
+		customer_id,
+		first_name,
+        points,
+        'Bronze' AS type
+FROM customers
+WHERE points < 2000
+UNION
+SELECT 
+		customer_id,
+		first_name,
+        points,
+        'Silver' AS type
+FROM customers
+WHERE points >= 2000 AND points < 3000
+UNION
+SELECT 
+		customer_id,
+		first_name,
+        points,
+        'Gold' AS type
+FROM customers
+WHERE points >= 3000
+ORDER BY first_name;
+
+
+-- COLUMN ATTRIBUTES
+-- OMITTED
+
+-- INSERTING A SINGLE ROW
+INSERT INTO customers
+VALUES (
+		DEFAULT,
+		'John', 
+        'Smith', 
+        '1990-01-01',
+        NULL,
+        'address',
+        'city',
+        'CA',
+        DEFAULT);
+        
+INSERT INTO customers (
+		first_name,
+        last_name,
+        birth_date,
+        address,
+        city,
+        state
+) -- The order does not matter;
+VALUES (
+		'John', 
+        'Smith', 
+        '1990-01-01',
+        'address',
+        'city',
+        'CA');
+        
+
+-- INSERTING MULTIPLE ROWS
+INSERT INTO shippers (name)
+VALUES ('Shipper 1'),
+			 ('Shipper 2'),
+             ('Shipper 3');
+             
+
+-- EXERCISE 18
+INSERT INTO products (name, quantity_in_stock, unit_price)
+VALUES ('Product 1', 20, 2.88),
+			 ('Product 2', 30, 1.88),
+             ('Product 3', 40, 0.88);
+             
+
+-- INSERTING HIERARCHICAL ROWS
+INSERT INTO orders (customer_id, order_date, status)
+VALUES (1, '2019-01-02', 1);
+
+INSERT INTO order_items
+VALUES 
+		(LAST_INSERT_ID(), 1, 1, 2.95),
+        (LAST_INSERT_ID(), 2, 1, 3.95);
+        
+        
+-- CREATING A COPY OF A TABLE
+CREATE TABLE orders_archived AS
+SELECT * FROM orders; -- Ignored PK and AI attributes;
+
+INSERT INTO orders_archived 
+SELECT * 
+FROM orders
+WHERE order_date < '2019-01-01';
+
+-- EXERCISE 19
 
 
 
